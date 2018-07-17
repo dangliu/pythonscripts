@@ -1,4 +1,4 @@
-#!usr/bin/python
+#!/usr/bin/python
 
 #genome_size [\t] N_of_scf [\t] Largest_scf [\t] N50 [\t] L50 [\t] N90 [\t] L90 [\t] valid_nuc [\t] gap
 usage = """
@@ -83,7 +83,7 @@ final_l.append(str(valid_nuc))
 final_l.append(str(gap))
 
 # output
-print "%10s %5s %10s %10s %5s %10s %5s %10s %10s" % ("Genom_size", "N.Scf", "Large_scf", "N50", "L50", "N90", "L50", "Valid_nuc", "Gap")
+print "%10s %5s %10s %10s %5s %10s %5s %10s %10s" % ("Genom_size", "N.Scf", "Large_scf", "N50", "L50", "N90", "L90", "Valid_nuc", "Gap")
 print "%10s %5s %10s %10s %5s %10s %5s %10s %10s" % (killo(final_l[0]), final_l[1], killo(final_l[2]), killo(final_l[3]), final_l[4], killo(final_l[5]), final_l[6], killo(final_l[7]), killo(final_l[8]))
 print "%10s %5s %10s %10s %5s %10s %5s %10s %10s" % (mega(final_l[0]), final_l[1], mega(final_l[2]), mega(final_l[3]), final_l[4], mega(final_l[5]), final_l[6], mega(final_l[7]), mega(final_l[8]))
 #last_v20171003
