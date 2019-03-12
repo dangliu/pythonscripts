@@ -81,8 +81,11 @@ while(line2):
 	len2 = line2_s[8] # cM
 	LOD = line2_s[7]
 	print(ind1, ind_dict[ind1], ind2, ind_dict[ind2], chro, len1, len2, LOD, sep="\t", end="\n", file=out_f)
+	# Because each ind vs ind just appear once, so need to count it for both pop
 	pop_dict[ind_dict[ind1]][ind_dict[ind2]]["L"].append(float(len2)) # Use cM as sharing length count
+	pop_dict[ind_dict[ind2]][ind_dict[ind1]]["L"].append(float(len2)) # Use cM as sharing length count
 	pop_dict[ind_dict[ind1]][ind_dict[ind2]]["N"] += 1 # Count sharing number between pop1 and pop2
+	pop_dict[ind_dict[ind2]][ind_dict[ind1]]["N"] += 1 # Count sharing number between pop1 and pop2
 	line2 = f2.readline()
 f2.close()
 
@@ -103,7 +106,7 @@ for i in pop_dict:
 	for k in pop_dict[i]:
 		if (k != "Country"):
 			N = pop_dict[i][k]["N"]
-			N_ind = math.ceil(pop_dict[i][k]["N"]/len(getKeysByValue(ind_dict, i))) # normalized by pop1 sample size here
+			N_ind = math.ceil(pop_dict[i][k]["N"]*(len(getKeysByValue(ind_dict, k))+len(getKeysByValue(ind_dict, i)))/(len(getKeysByValue(ind_dict, i))*len(getKeysByValue(ind_dict, k)))) # normalized by sample size here n=N*(Sp1+Sp2)/Sp1*Sp2, and math.ceil(x) returns the smallest int >= x
 			Country1 = pop_dict[i]["Country"]
 			Country2 = pop_dict[k]["Country"]
 			if (i == k):
