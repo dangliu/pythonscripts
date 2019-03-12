@@ -6,6 +6,9 @@ It was written by Dang Liu. Last updated: Mar 11 2019.
 usage:
 python3 IBD_stats.py pop.info merged.ibd
 
+output:
+Merged.pop.ibd, Merged.pop.ibd.stats and Merged.pop.ibd.len
+
 """
 
 # modules here
@@ -95,11 +98,11 @@ print("Merged.pop.ibd is output!")
 
 # Output stats
 out_f2 = open("Merged.pop.ibd.stats", "w")
-out_f3 = open("Merged.pop.ibd.within.len", "w")
+out_f3 = open("Merged.pop.ibd.len", "w")
 
 # Headers
 print("Pop1", "Pop2", "Total" ,"Average", "Median", "N", "N_ind", "Country1" ,"Country2", sep="\t", end="\n", file=out_f2)
-print("Pop", "Length", "N_ind", "Country", sep="\t", end="\n", file=out_f3)
+print("Pop1", "Pop2", "Length", "N_ind", "Country1", "Country2", sep="\t", end="\n", file=out_f3)
 
 for i in pop_dict:
 	print("Processing population " + i + "...")
@@ -109,9 +112,8 @@ for i in pop_dict:
 			N_ind = math.ceil(pop_dict[i][k]["N"]*(len(getKeysByValue(ind_dict, k))+len(getKeysByValue(ind_dict, i)))/(len(getKeysByValue(ind_dict, i))*len(getKeysByValue(ind_dict, k)))) # normalized by sample size here n=N*(Sp1+Sp2)/Sp1*Sp2, and math.ceil(x) returns the smallest int >= x
 			Country1 = pop_dict[i]["Country"]
 			Country2 = pop_dict[k]["Country"]
-			if (i == k):
-				for l in pop_dict[i][k]["L"]:
-					print(i, l, N_ind, Country1, sep="\t", end="\n", file=out_f3) # Output in within stats if pop1 == pop2
+			for l in pop_dict[i][k]["L"]:
+				print(i, k, l, N_ind, Country1, Country2, sep="\t", end="\n", file=out_f3) 
 			if (N != 0):
 				Total = "%.3f" % (sum(pop_dict[i][k]["L"]))
 				Average = "%.3f" % (sum(pop_dict[i][k]["L"])/len(pop_dict[i][k]["L"]))
@@ -124,6 +126,6 @@ out_f2.close()
 out_f3.close()
 
 print("Merged.pop.ibd.stats is output!")
-print("Merged.pop.ibd.within.len is output!")
+print("Merged.pop.ibd.len is output!")
 print("All done!")
 
