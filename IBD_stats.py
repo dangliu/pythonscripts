@@ -2,12 +2,12 @@
 
 usage = """
 This script is for combining refined-IBD output with poppualtion information and calculate the descriptive statistics.
-It was written by Dang Liu. Last updated: Mar 11 2019.
+It was written by Dang Liu. Last updated: Mar 13 2019.
 usage:
 python3 IBD_stats.py pop.info merged.ibd
 
 output:
-Merged.pop.ibd, Merged.pop.ibd.stats and Merged.pop.ibd.len
+Merged.pop.ibd, Merged.pop.ibd.stats and Merged.pop.ibd.L.N
 
 """
 
@@ -50,6 +50,7 @@ while(line):
 	IID = line_s[1]
 	pop = line_s[2]
 	country = line_s[4]
+	ind_dict[IID] = []
 	ind_dict[IID] = pop
 	if (pop not in pop_dict):
 		pop_dict[pop] = {}
@@ -57,48 +58,67 @@ while(line):
 	line = f1.readline()
 f1.close()
 
-#print(pop_dict)
+print("Ind info processed!")
 
 # Make la start point to count number and length of sharing IBD for each pop vs. pop pair 
 for i in pop_dict:
 	for k in pop_dict:
 		pop_dict[i][k] = {}
 		pop_dict[i][k]["L"] = []
-		pop_dict[i][k]["N"] = 0
+		pop_dict[i][k]["N"] = []
 print("pop info processed!")
-#print(pop_dict)
+
 # Read in IBD file
 
 # Output a reformatted IBD result with population informations
 out_f = open("Merged.pop.ibd", "w")
+pair_dit = {}
 
 f2 = open(sys.argv[2], 'r')
-ibd_dict = {}
 line2 = f2.readline()
 while(line2):
 	line2_s = re.split(r'\s+', line2.replace("\n",""))
 	ind1 = line2_s[0]
 	ind2 = line2_s[2]
+	pair = ind1 + ":" + ind2
 	chro = line2_s[4]
 	len1 = int(line2_s[6]) - int(line2_s[5]) # Mb
 	len2 = line2_s[8] # cM
 	LOD = line2_s[7]
 	print(ind1, ind_dict[ind1], ind2, ind_dict[ind2], chro, len1, len2, LOD, sep="\t", end="\n", file=out_f)
 	# Because each ind vs ind just appear once, so need to count it for both pop
-	pop_dict[ind_dict[ind1]][ind_dict[ind2]]["L"].append(float(len2)) # Use cM as sharing length count
-	pop_dict[ind_dict[ind2]][ind_dict[ind1]]["L"].append(float(len2)) # Use cM as sharing length count
-	pop_dict[ind_dict[ind1]][ind_dict[ind2]]["N"] += 1 # Count sharing number between pop1 and pop2
-	pop_dict[ind_dict[ind2]][ind_dict[ind1]]["N"] += 1 # Count sharing number between pop1 and pop2
+	if (pair not in pair_dit):
+		pair_dit[pair] = {}
+		pair_dit[pair]["L"] = 0
+		pair_dit[pair]["N"] = 0
+		pair_dit[pair]["L"] += float(len2) # Use cM as sharing length count, count the total IBD length in this pair
+		pair_dit[pair]["N"] += 1 # Count total sharing number in this pair
+	else:
+		pair_dit[pair]["L"] += float(len2)
+		pair_dit[pair]["N"] += 1		
 	line2 = f2.readline()
 f2.close()
 
 out_f.close()
 print("Merged.pop.ibd is output!")
+
+# Manage ind pair to pop scale info
+for p in pair_dit:
+	ind1 = p.split(":")[0]
+	ind2 = p.split(":")[1]
+	pop1 = ind_dict[ind1]
+	pop2 = ind_dict[ind2]
+	# Because each ind vs ind just appear once, so need to count it for both pop
+	pop_dict[pop1][pop2]["L"].append(pair_dit[p]["L"])
+	pop_dict[pop1][pop2]["N"].append(pair_dit[p]["N"])
+	pop_dict[pop2][pop1]["L"].append(pair_dit[p]["L"])
+	pop_dict[pop2][pop1]["N"].append(pair_dit[p]["N"])	
+
 # Stats
 
 # Output stats
 out_f2 = open("Merged.pop.ibd.stats", "w")
-out_f3 = open("Merged.pop.ibd.len", "w")
+out_f3 = open("Merged.pop.ibd.L.N", "w")
 
 # Headers
 print("Pop1", "Pop2", "Total" ,"Average", "Median", "N", "N_ind", "Country1" ,"Country2", sep="\t", end="\n", file=out_f2)
@@ -108,24 +128,30 @@ for i in pop_dict:
 	print("Processing population " + i + "...")
 	for k in pop_dict[i]:
 		if (k != "Country"):
-			N = pop_dict[i][k]["N"]
-			N_ind = math.ceil(pop_dict[i][k]["N"]*(len(getKeysByValue(ind_dict, k))+len(getKeysByValue(ind_dict, i)))/(len(getKeysByValue(ind_dict, i))*len(getKeysByValue(ind_dict, k)))) # normalized by sample size here n=N*(Sp1+Sp2)/Sp1*Sp2, and math.ceil(x) returns the smallest int >= x
+			N = sum(pop_dict[i][k]["N"])
 			Country1 = pop_dict[i]["Country"]
 			Country2 = pop_dict[k]["Country"]
-			for l in pop_dict[i][k]["L"]:
-				print(i, k, l, N_ind, Country1, Country2, sep="\t", end="\n", file=out_f3) 
-			if (N != 0):
+			if (N != 0):				
+				N_ind = round(sum(pop_dict[i][k]["N"])/len(pop_dict[i][k]["N"])) # average sharing number in each pair between the two pops
 				Total = "%.3f" % (sum(pop_dict[i][k]["L"]))
 				Average = "%.3f" % (sum(pop_dict[i][k]["L"])/len(pop_dict[i][k]["L"]))
 				Median = "%.3f" %  (median(pop_dict[i][k]["L"]))
 				print(i, k, Total, Average, Median, N, N_ind, Country1, Country2, sep="\t", end="\n", file=out_f2)
+				index = 0
+				for l in pop_dict[i][k]["L"]:
+					print(i, k, l, pop_dict[i][k]["N"][index], Country1, Country2, sep="\t", end="\n", file=out_f3)
+					index += 1 
 			else:
 				print(i, k, "NA", "NA", "NA", "NA", "NA", Country1, Country2, sep="\t", end="\n", file=out_f2) # Put NA for no sharing
+				for l in pop_dict[i][k]["L"]:
+					print(i, k, "NA", "NA", Country1, Country2, sep="\t", end="\n", file=out_f3) # Put NA for no sharing
 
 out_f2.close()
 out_f3.close()
 
 print("Merged.pop.ibd.stats is output!")
-print("Merged.pop.ibd.len is output!")
+print("Merged.pop.ibd.L.N is output!")
 print("All done!")
+
+# last_v20190312
 
