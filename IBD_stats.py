@@ -2,7 +2,7 @@
 
 usage = """
 This script is for combining refined-IBD output with poppualtion information and calculate the descriptive statistics.
-It was written by Dang Liu. Last updated: Mar 13 2019.
+It was written by Dang Liu. Last updated: Mar 19 2019.
 usage:
 python3 IBD_stats.py pop.info merged.ibd
 
@@ -82,10 +82,12 @@ while(line2):
 	ind2 = line2_s[2]
 	pair = ind1 + ":" + ind2
 	chro = line2_s[4]
-	len1 = int(line2_s[6]) - int(line2_s[5]) # Mb
+	start = line2_s[5]
+	end = line2_s[6]
+	len1 = int(end) - int(start) + 1 # Mb
 	len2 = line2_s[8] # cM
 	LOD = line2_s[7]
-	print(ind1, ind_dict[ind1], ind2, ind_dict[ind2], chro, len1, len2, LOD, sep="\t", end="\n", file=out_f)
+	print(ind1, ind_dict[ind1], ind2, ind_dict[ind2], chro, start, end, len1, len2, LOD, sep="\t", end="\n", file=out_f)
 	# Because each ind vs ind just appear once, so need to count it for both pop
 	if (pair not in pair_dit):
 		pair_dit[pair] = {}
@@ -153,5 +155,5 @@ print("Merged.pop.ibd.stats is output!")
 print("Merged.pop.ibd.L.N is output!")
 print("All done!")
 
-# last_v20190312
+# last_v20190319, add start and end to Merged.pop.ibd
 
