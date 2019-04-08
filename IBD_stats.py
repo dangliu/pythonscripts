@@ -71,7 +71,7 @@ print("pop info processed!")
 # Read in IBD file
 
 # Output a reformatted IBD result with population informations
-out_f = open("Merged.pop.ibd", "w")
+out_f = open(sys.argv[2] + ".pop", "w")
 pair_dit = {}
 
 f2 = open(sys.argv[2], 'r')
@@ -79,7 +79,9 @@ line2 = f2.readline()
 while(line2):
 	line2_s = re.split(r'\s+', line2.replace("\n",""))
 	ind1 = line2_s[0]
+	ind1_id = line2_s[1]
 	ind2 = line2_s[2]
+	ind2_id = line2_s[3]
 	pair = ind1 + ":" + ind2
 	chro = line2_s[4]
 	start = line2_s[5]
@@ -87,7 +89,7 @@ while(line2):
 	len1 = int(end) - int(start) + 1 # Mb
 	len2 = line2_s[8] # cM
 	LOD = line2_s[7]
-	print(ind1, ind_dict[ind1], ind2, ind_dict[ind2], chro, start, end, len1, len2, LOD, sep="\t", end="\n", file=out_f)
+	print(ind1, ind1_id, ind_dict[ind1], ind2, ind2_id, ind_dict[ind2], chro, start, end, LOD, len2, sep="\t", end="\n", file=out_f)
 	# Because each ind vs ind just appear once, so need to count it for both pop
 	if (pair not in pair_dit):
 		pair_dit[pair] = {}
@@ -102,7 +104,7 @@ while(line2):
 f2.close()
 
 out_f.close()
-print("Merged.pop.ibd is output!")
+print(sys.argv[2] + ".pop is output!")
 
 # Manage ind pair to pop scale info
 for p in pair_dit:
@@ -119,8 +121,8 @@ for p in pair_dit:
 # Stats
 
 # Output stats
-out_f2 = open("Merged.pop.ibd.stats", "w")
-out_f3 = open("Merged.pop.ibd.L.N", "w")
+out_f2 = open(sys.argv[2] + ".stats", "w")
+out_f3 = open(sys.argv[2] + ".L.N", "w")
 
 # Headers
 print("Pop1", "Pop2", "Total" ,"Average", "Median", "N", "N_ind", "Country1" ,"Country2", sep="\t", end="\n", file=out_f2)
@@ -151,9 +153,10 @@ for i in pop_dict:
 out_f2.close()
 out_f3.close()
 
-print("Merged.pop.ibd.stats is output!")
-print("Merged.pop.ibd.L.N is output!")
+print(sys.argv[2] + ".stats is output!")
+print(sys.argv[2] + ".L.N is output!")
 print("All done!")
 
 # last_v20190319, add start and end to Merged.pop.ibd
+# last_v20190406, change output naming way
 
