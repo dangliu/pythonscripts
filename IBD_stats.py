@@ -2,7 +2,7 @@
 
 usage = """
 This script is for combining refined-IBD output with poppualtion information and calculate the descriptive statistics.
-It was written by Dang Liu. Last updated: Mar 19 2019.
+It was written by Dang Liu. Last updated: Nov 11 2019.
 usage:
 python3 IBD_stats.py pop.info merged.ibd
 
@@ -54,7 +54,7 @@ while(line):
 	ind_dict[IID] = pop
 	if (pop not in pop_dict):
 		pop_dict[pop] = {}
-		pop_dict[pop]["Country"] = country
+		# pop_dict[pop]["Country"] = country
 	line = f1.readline()
 f1.close()
 
@@ -125,12 +125,31 @@ out_f2 = open(sys.argv[2] + ".stats", "w")
 out_f3 = open(sys.argv[2] + ".L.N", "w")
 
 # Headers
-print("Pop1", "Pop2", "Total" ,"Average", "Median", "N", "N_ind", "Country1" ,"Country2", sep="\t", end="\n", file=out_f2)
-print("Pop1", "Pop2", "Length", "N_ind", "Country1", "Country2", sep="\t", end="\n", file=out_f3)
+# print("Pop1", "Pop2", "Total" ,"Average", "Median", "N", "N_ind", "Country1" ,"Country2", sep="\t", end="\n", file=out_f2)
+# print("Pop1", "Pop2", "Length", "N_ind", "Country1", "Country2", sep="\t", end="\n", file=out_f3)
+print("Pop1", "Pop2", "Total" ,"Average", "Median", "N", "N_ind", sep="\t", end="\n", file=out_f2)
+print("Pop1", "Pop2", "Length", "N_ind", sep="\t", end="\n", file=out_f3)
+
 
 for i in pop_dict:
 	print("Processing population " + i + "...")
 	for k in pop_dict[i]:
+		N = sum(pop_dict[i][k]["N"])
+		if (N != 0):				
+			N_ind = round(sum(pop_dict[i][k]["N"])/len(pop_dict[i][k]["N"])) # average sharing number in each pair between the two pops
+			Total = "%.3f" % (sum(pop_dict[i][k]["L"]))
+			Average = "%.3f" % (sum(pop_dict[i][k]["L"])/len(pop_dict[i][k]["L"]))
+			Median = "%.3f" %  (median(pop_dict[i][k]["L"]))
+			print(i, k, Total, Average, Median, N, N_ind, sep="\t", end="\n", file=out_f2)
+			index = 0
+			for l in pop_dict[i][k]["L"]:
+				print(i, k, l, pop_dict[i][k]["N"][index], sep="\t", end="\n", file=out_f3)
+				index += 1 
+		else:
+			print(i, k, "NA", "NA", "NA", "NA", "NA", sep="\t", end="\n", file=out_f2) # Put NA for no sharing
+			for l in pop_dict[i][k]["L"]:
+				print(i, k, "NA", "NA", sep="\t", end="\n", file=out_f3) # Put NA for no sharing
+'''
 		if (k != "Country"):
 			N = sum(pop_dict[i][k]["N"])
 			Country1 = pop_dict[i]["Country"]
@@ -149,7 +168,7 @@ for i in pop_dict:
 				print(i, k, "NA", "NA", "NA", "NA", "NA", Country1, Country2, sep="\t", end="\n", file=out_f2) # Put NA for no sharing
 				for l in pop_dict[i][k]["L"]:
 					print(i, k, "NA", "NA", Country1, Country2, sep="\t", end="\n", file=out_f3) # Put NA for no sharing
-
+'''
 out_f2.close()
 out_f3.close()
 
@@ -159,4 +178,5 @@ print("All done!")
 
 # last_v20190319, add start and end to Merged.pop.ibd
 # last_v20190406, change output naming way
+# last_v20191111, remove 'Country' parts
 
