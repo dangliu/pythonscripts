@@ -13,6 +13,7 @@ Merged.pop.ibd, Merged.pop.ibd.stats and Merged.pop.ibd.L.N
 
 # modules here
 import sys, re, math
+import itertools
 
 # if input number is incorrect, print the usage
 if len(sys.argv) < 3:
@@ -60,7 +61,7 @@ f1.close()
 
 print("Ind info processed!")
 
-# Make la start point to count number and length of sharing IBD for each pop vs. pop pair 
+# Make a start point to count number and length of sharing IBD for each pop vs. pop pair 
 for i in pop_dict:
 	for k in pop_dict:
 		pop_dict[i][k] = {}
@@ -136,10 +137,16 @@ for i in pop_dict:
 	for k in pop_dict[i]:
 		N = sum(pop_dict[i][k]["N"])
 		if (N != 0):				
-			N_ind = round(sum(pop_dict[i][k]["N"])/len(pop_dict[i][k]["N"])) # average sharing number in each pair between the two pops
+			#N_ind = round(sum(pop_dict[i][k]["N"])/len(pop_dict[i][k]["N"])) # average sharing number in each pair between the two pops
+			all_pair_n = (len(getKeysByValue(ind_dict,i)) * len(getKeysByValue(ind_dict,k)))
+			N_ind = "%.3f" % (sum(pop_dict[i][k]["N"]) / all_pair_n) # average sharing number by total possible pairs between the two pops
 			Total = "%.3f" % (sum(pop_dict[i][k]["L"]))
-			Average = "%.3f" % (sum(pop_dict[i][k]["L"])/len(pop_dict[i][k]["L"]))
-			Median = "%.3f" %  (median(pop_dict[i][k]["L"]))
+			#Average = "%.3f" % (sum(pop_dict[i][k]["L"])/len(pop_dict[i][k]["L"]))
+			Average = "%.3f" % (sum(pop_dict[i][k]["L"]) / all_pair_n)
+			N0_to_add = all_pair_n-len(pop_dict[i][k]["L"]) # For counting median, we have to know how many more possible pairs but 0 IBD detected should be added
+			# print(N0_to_add) # There are some negative values need to fix
+			N0_to_add_l = list(itertools.chain.from_iterable(itertools.repeat(x, N0_to_add) for x in [0]))
+			Median = "%.3f" %  (median(pop_dict[i][k]["L"] + N0_to_add_l))
 			print(i, k, Total, Average, Median, N, N_ind, sep="\t", end="\n", file=out_f2)
 			index = 0
 			for l in pop_dict[i][k]["L"]:
@@ -179,4 +186,4 @@ print("All done!")
 # last_v20190319, add start and end to Merged.pop.ibd
 # last_v20190406, change output naming way
 # last_v20191111, remove 'Country' parts
-
+# last_v20200703, average sharing number/length by total possible pairs between the two pops
